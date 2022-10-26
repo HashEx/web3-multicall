@@ -79,3 +79,19 @@ ChainID: 25
 Contract: [0x88b373B83166E72FD55648Ce114712633f1782E2](https://cronoscan.com/address/0x88b373B83166E72FD55648Ce114712633f1782E2)
 
 ---
+
+Name: Arbitrum
+
+ChainID: 42161
+
+Contract: [0x88b373B83166E72FD55648Ce114712633f1782E2](https://arbiscan.io/address/0x88b373b83166e72fd55648ce114712633f1782e2)
+
+---
+
+Name: Optimism
+
+ChainID: 10
+
+Contract: [0x88b373B83166E72FD55648Ce114712633f1782E2](https://optimistic.etherscan.io/address/0x88b373B83166E72FD55648Ce114712633f1782E2)
+
+---
