@@ -16,13 +16,13 @@ _chai.expect;
     private web3: Web3;
 
     before() {
-        this.chainId = 56;
-        this.host = 'https://bsc-dataseed1.ninicoin.io';
+        this.chainId = 10;
+        this.host = 'https://mainnet.optimism.io';
         this.web3 = new Web3(this.host);
     }
 
     @test async 'USDT contract\'s properties check' () {
-        const address = '0x55d398326f99059fF775485246999027B3197955';
+        const address = '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58';
         const provider = new Web3.providers.HttpProvider(this.host);
         const multicall = new Multicall({
             chainId: this.chainId,
