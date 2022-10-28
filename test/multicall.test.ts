@@ -11,76 +11,84 @@ _chai.should();
 _chai.expect;
 
 @suite class MulticallTest {
-    private chainId: number;
-    private host: string;
-    private web3: Web3;
+    private chainIds: number[];
+    private hosts: string[];
+    private web3s: Web3[];
 
     before() {
-        this.chainId = 10;
-        this.host = 'https://mainnet.optimism.io';
-        this.web3 = new Web3(this.host);
+        this.chainIds = [10, 56];
+        this.hosts = ['https://mainnet.optimism.io', 'https://rpc-bsc.bnb48.club'];
+        this.web3s = [new Web3(this.hosts[0]), new Web3(this.hosts[1])];
     }
 
     @test async 'USDT contract\'s properties check' () {
-        const address = '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58';
-        const provider = new Web3.providers.HttpProvider(this.host);
-        const multicall = new Multicall({
-            chainId: this.chainId,
-            provider
-        });
+        const addresses = ['0x94b008aA00579c1307B0EF2c499aD98a8ce58e58', '0x55d398326f99059fF775485246999027B3197955'];
+        for (let i = 0; i < addresses.length; i++) {
+            const provider = new Web3.providers.HttpProvider(this.hosts[i]);
+            const multicall = new Multicall({
+                chainId: this.chainIds[i],
+                provider
+            });
 
-        const contract = new this.web3.eth.Contract(tokenAbi as AbiItem[], address);
-        const contracts = [contract.methods['symbol'](), contract.methods['nonExistedProperty']()];
-        const result = await multicall.aggregate(contracts);
-        expect(result.length).to.be.equal(contracts.length);
+            const contract = new this.web3s[i].eth.Contract(tokenAbi as AbiItem[], addresses[i]);
+            const contracts = [contract.methods['symbol'](), contract.methods['nonExistedProperty']()];
+            const result = await multicall.aggregate(contracts);
+            expect(result.length).to.be.equal(contracts.length);
 
-        expect(result[0][0]).to.be.equal(true);
-        expect(result[1][0]).to.be.equal(false);
-        expect(result[0][1]).to.be.equal('USDT');
+            expect(result[0][0]).to.be.equal(true);
+            expect(result[1][0]).to.be.equal(false);
+            expect(result[0][1]).to.be.equal('USDT');
+        }
     }
 
     @test async 'Not supported chain param fail' () {
-        const provider = new Web3.providers.HttpProvider(this.host);
-        const unsupportedChainId = 1111;
-        expect(() => new Multicall({
-            chainId: unsupportedChainId,
-            provider
-        })).to.throw('No address found via chainId. Please specify multicallAddress.');
+        for (let i = 0; i < this.hosts.length; i++) {
+            const provider = new Web3.providers.HttpProvider(this.hosts[i]);
+            const unsupportedChainId = 1111;
+            expect(() => new Multicall({
+                chainId: unsupportedChainId,
+                provider
+            })).to.throw('No address found via chainId. Please specify multicallAddress.');
+        }
     }
 
     @test async 'Get block hash' () {
-        const provider = new Web3.providers.HttpProvider(this.host);
+        for (let i = 0; i < this.hosts.length; i++) {
+            const provider = new Web3.providers.HttpProvider(this.hosts[i]);
 
-        const multicall = new Multicall({
-            chainId: this.chainId,
-            provider,
-        });
+            const multicall = new Multicall({
+                chainId: this.chainIds[i],
+                provider,
+            });
 
-        const web3 = new Web3(provider);
+            const web3 = new Web3(provider);
 
-        const blockNumber = (await web3.eth.getBlockNumber()) - 10;
-        const web3Block = await web3.eth.getBlock(blockNumber);
-        
-        const blockHash = await multicall.getBlockHash(blockNumber).call();
+            const blockNumber = (await web3.eth.getBlockNumber()) - 10;
+            const web3Block = await web3.eth.getBlock(blockNumber);
 
-        expect(blockHash).to.equal(web3Block.hash);
+            const blockHash = await multicall.getBlockHash(blockNumber).call();
+
+            expect(blockHash).to.equal(web3Block.hash);
+        }
     }
 
     @test async 'Get latest block hash' () {
-        const provider = new Web3.providers.HttpProvider(this.host);
+        for (let i = 0; i < this.hosts.length; i++) {
+            const provider = new Web3.providers.HttpProvider(this.hosts[i]);
 
-        const multicall = new Multicall({
-            chainId: this.chainId,
-            provider,
-        });
+            const multicall = new Multicall({
+                chainId: this.chainIds[i],
+                provider,
+            });
 
-        const web3 = new Web3(provider);
+            const web3 = new Web3(provider);
 
-        const blockNumber = (await web3.eth.getBlockNumber()) - 1;
-        const web3Block = await web3.eth.getBlock(blockNumber);
+            const blockNumber = (await web3.eth.getBlockNumber()) - 1;
+            const web3Block = await web3.eth.getBlock(blockNumber);
 
-        const blockHash = await multicall.getLastBlockHash().call();
+            const blockHash = await multicall.getLastBlockHash().call();
 
-        expect(blockHash).to.equal(web3Block.hash);
+            expect(blockHash).to.equal(web3Block.hash);
+        }
     }
 }

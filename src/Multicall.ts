@@ -62,7 +62,9 @@ class Multicall {
             };
         });
 
-        const { results, returnData } = await this.multicall.methods['aggregateViewCalls' || 'aggregate'](callRequests).call();
+        let methodName = this.abi.find((item) => item.name === 'aggregateViewCalls')?.name;
+        if (!methodName) methodName = 'aggregate';
+        const { results, returnData } = await this.multicall.methods[methodName](callRequests).call();
 
         return returnData.map((hex: string, index: number) => {
             const types = calls[index]._method.outputs.map(
