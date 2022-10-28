@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import { AbiItem, toChecksumAddress } from 'web3-utils';
+import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core';
 
@@ -14,7 +14,6 @@ interface ConstructorArgs {
 }
 
 const multicallAbiSelector = (chainId: number | undefined, address: string): { abi: AbiItem[] } => {
-    address = toChecksumAddress(address);
     if (chainId === ChainId.ARBITRUM && address === CHAIN_ID_TO_MULTICALL_ADDRESS[ChainId.ARBITRUM]) {
         return { abi: multicallV2Abi as AbiItem[] };
     }
