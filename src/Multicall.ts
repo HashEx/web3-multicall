@@ -62,19 +62,8 @@ class Multicall {
             };
         });
 
-        let answer;
-        if (this.abi.some((item) => item.name === 'aggregateViewCalls')) {
-            answer = await this.multicall.methods
-                .aggregateViewCalls(callRequests)
-                .call();
-        } else {
-            answer = await this.multicall.methods
-                .aggregate(callRequests)
-                .call();
-        }
+        const { results, returnData } = await this.multicall.methods['aggregateViewCalls' || 'aggregate'](callRequests).call();
 
-        const returnData = answer.returnData;
-        const results = answer.results;
         return returnData.map((hex: string, index: number) => {
             const types = calls[index]._method.outputs.map(
                 (o: any) => ((o.internalType !== o.type) && (o.internalType !== undefined)) ? o : o.type
