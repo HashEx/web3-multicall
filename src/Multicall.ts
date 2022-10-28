@@ -14,11 +14,12 @@ interface ConstructorArgs {
 }
 
 const multicallAbiSelector = (chainId: number | undefined, address: string): { abi: AbiItem[] } => {
-    if (chainId === ChainId.ARBITRUM && address === CHAIN_ID_TO_MULTICALL_ADDRESS[ChainId.ARBITRUM]) {
+    address = address.toLowerCase();
+    if (chainId === ChainId.ARBITRUM && address === CHAIN_ID_TO_MULTICALL_ADDRESS[ChainId.ARBITRUM].toLowerCase()) {
         return { abi: multicallV2Abi as AbiItem[] };
     }
 
-    if (chainId === ChainId.OPTIMISM && address === CHAIN_ID_TO_MULTICALL_ADDRESS[ChainId.OPTIMISM]) {
+    if (chainId === ChainId.OPTIMISM && address === CHAIN_ID_TO_MULTICALL_ADDRESS[ChainId.OPTIMISM].toLowerCase()) {
         return { abi: multicallV2Abi as AbiItem[] };
     }
 
