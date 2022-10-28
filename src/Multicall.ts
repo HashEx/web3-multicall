@@ -1,10 +1,11 @@
 import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
+import { AbiItem, toChecksumAddress } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core';
 
-import { CHAIN_ID_TO_MULTICALL_ADDRESS } from './constants';
-import mulitcallAbi from './abi/Multicall.json';
+import { CHAIN_ID_TO_MULTICALL_ADDRESS, ChainId } from './constants';
+import multicallAbi from './abi/Multicall.json';
+import multicallV2Abi from './abi/MulticallV2.json';
 
 interface ConstructorArgs {
   chainId?: number;
@@ -12,9 +13,23 @@ interface ConstructorArgs {
   multicallAddress?: string;
 }
 
+const multicallAbiSelector = (chainId: number | undefined, address: string): { abi: AbiItem[] } => {
+    address = toChecksumAddress(address);
+    if (chainId === ChainId.ARBITRUM && address === CHAIN_ID_TO_MULTICALL_ADDRESS[ChainId.ARBITRUM]) {
+        return { abi: multicallV2Abi as AbiItem[] };
+    }
+
+    if (chainId === ChainId.OPTIMISM && address === CHAIN_ID_TO_MULTICALL_ADDRESS[ChainId.OPTIMISM]) {
+        return { abi: multicallV2Abi as AbiItem[] };
+    }
+
+    return { abi: multicallAbi as AbiItem[] };
+};
+
 class Multicall {
     web3: Web3;
     multicall: Contract;
+    abi: AbiItem[];
 
     constructor({ chainId, provider, multicallAddress }: ConstructorArgs) {
         this.web3 = new Web3(provider);
@@ -31,9 +46,10 @@ class Multicall {
             );
         }
 
+        this.abi = multicallAbiSelector(chainId, _multicallAddress).abi;
         this.multicall = new this.web3.eth.Contract(
-      mulitcallAbi as AbiItem[],
-      _multicallAddress
+            this.abi,
+            _multicallAddress
         );
     }
 
@@ -46,9 +62,9 @@ class Multicall {
             };
         });
 
-        const { returnData, results } = await this.multicall.methods
-            .aggregate(callRequests)
-            .call();
+        let methodName = this.abi.find((item) => item.name === 'aggregateViewCalls')?.name;
+        if (!methodName) methodName = 'aggregate';
+        const { results, returnData } = await this.multicall.methods[methodName](callRequests).call();
 
         return returnData.map((hex: string, index: number) => {
             const types = calls[index]._method.outputs.map(
