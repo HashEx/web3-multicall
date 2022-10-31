@@ -1,11 +1,10 @@
 import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import { provider } from 'web3-core';
 
-import { CHAIN_ID_TO_MULTICALL_ADDRESS, ChainId } from './constants';
-import multicallAbi from './abi/Multicall.json';
-import multicallV2Abi from './abi/MulticallV2.json';
+import { CHAIN_ID_TO_MULTICALL_ADDRESS, ChainId, VERSION } from './constants';
+import { AbiItem } from 'web3-utils';
+import { abiSelector } from './abi/abi-selector';
 
 interface ConstructorArgs {
   chainId?: number;
@@ -13,22 +12,23 @@ interface ConstructorArgs {
   multicallAddress?: string;
 }
 
-const multicallAbiSelector = (chainId: number | undefined, address: string): { abi: AbiItem[] } => {
+const multicallSelector = (chainId: number | undefined, address: string): VERSION => {
     address = address.toLowerCase();
     if (chainId === ChainId.ARBITRUM && address === CHAIN_ID_TO_MULTICALL_ADDRESS[ChainId.ARBITRUM].toLowerCase()) {
-        return { abi: multicallV2Abi as AbiItem[] };
+        return VERSION.V2;
     }
 
     if (chainId === ChainId.OPTIMISM && address === CHAIN_ID_TO_MULTICALL_ADDRESS[ChainId.OPTIMISM].toLowerCase()) {
-        return { abi: multicallV2Abi as AbiItem[] };
+        return VERSION.V2;
     }
 
-    return { abi: multicallAbi as AbiItem[] };
+    return VERSION.V1;
 };
 
 class Multicall {
     web3: Web3;
     multicall: Contract;
+    version: VERSION;
     abi: AbiItem[];
 
     constructor({ chainId, provider, multicallAddress }: ConstructorArgs) {
@@ -46,7 +46,8 @@ class Multicall {
             );
         }
 
-        this.abi = multicallAbiSelector(chainId, _multicallAddress).abi;
+        this.version = multicallSelector(chainId, _multicallAddress);
+        this.abi = abiSelector(this.version);
         this.multicall = new this.web3.eth.Contract(
             this.abi,
             _multicallAddress
