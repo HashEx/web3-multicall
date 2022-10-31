@@ -63,15 +63,22 @@ class Multicall {
             };
         });
 
-        let methodName = this.abi.find((item) => item.name === 'aggregateViewCalls')?.name;
-        if (!methodName) methodName = 'aggregate';
+        let methodName;
+        switch (this.version) {
+        case VERSION.V1:
+            methodName = 'aggregate';
+            break;
+        case VERSION.V2:
+            methodName = 'aggregateViewCalls';
+            break;
+        }
+
         const { results, returnData } = await this.multicall.methods[methodName](callRequests).call();
 
         return returnData.map((hex: string, index: number) => {
             const types = calls[index]._method.outputs.map(
                 (o: any) => ((o.internalType !== o.type) && (o.internalType !== undefined)) ? o : o.type
             );
-            // console.log('response', results[index], hex)
             if (results[index]) {
                 let result;
                 try {
