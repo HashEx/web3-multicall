@@ -46,3 +46,8 @@ export const CHAIN_ID_TO_MULTICALL_ADDRESS: { [key: number]: string } = {
     [ChainId.OPTIMISM]: '0x88b373B83166E72FD55648Ce114712633f1782E2',
     [ChainId.ARBITRUM]: '0x88b373B83166E72FD55648Ce114712633f1782E2'
 };
+
+export enum VERSION {
+  V1,
+  V2
+}
